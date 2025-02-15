@@ -2,29 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Speed Dial</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="speed-dial-container">
-        <div class="grid">
-            <!-- Speed Dials will be dynamically added here -->
-        </div>
-    </div>
 
-    <div class="add-button">
-        <button onclick="openAddDialForm()">Add Speed Dial</button>
-    </div>
-
-    <div class="add-dial-form" id="addDialForm">
-        <label for="name">Speed Dial Name:</label>
-        <input type="text" id="dialName" placeholder="Enter Name">
-        <label for="url">URL:</label>
-        <input type="url" id="dialUrl" placeholder="Enter URL">
-        <button onclick="addSpeedDial()">Add</button>
-        <button onclick="closeAddDialForm()">Cancel</button>
-    </div>
+    <div class="grid" id="speedDialGrid"></div>
+    <button id="addButton">+ Add Speed Dial</button>
 
     <script src="script.js"></script>
 </body>

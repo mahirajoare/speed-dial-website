@@ -1,54 +1,72 @@
-const speedDials = [
-    { name: 'Github', url: 'https://github.com' },
-    { name: 'Revanced', url: 'https://github.com/ReVanced/revanced-patches/releases' },
-    { name: 'RVX', url: 'https://github.com/inotia00/revanced-patches/releases' },
-    { name: 'ShizuTools', url: 'https://github.com/legendsayantan/ShizuTools' },
-    { name: 'YTDLnis', url: 'https://github.com/deniscerri/ytdlnis/releases' },
-    { name: 'PDF Candy', url: 'https://pdfcandy.com/' },
-    { name: 'HdHub4u', url: 'https://hdhub4u.how/' },
-    { name: 'Bollyflix', url: 'https://bollyflix.africa/' },
-    { name: 'Liteapks', url: 'https://liteapks.com/' },
-    { name: 'RexDl', url: 'https://rexdl.com/' },
-    { name: 'ApkModCT', url: 'https://apkmodct.com/' },
-    { name: 'Fights Break Sphere · Season 5 - Plex', url: 'https://watch.plex.tv/show/battle-through-the-heavens/season/5' },
-    { name: 'Visa Check', url: 'https://epassportbd.info/visa-check-with-passport-number/' },
-    { name: 'P. World', url: 'https://wanmei-shijie.fandom.com/wiki/Cultivation' },
-    { name: 'An1', url: 'https://an1.com/' }
-];
+document.addEventListener('DOMContentLoaded', () => {
+    const speedDialGrid = document.getElementById('speedDialGrid');
+    const addButton = document.getElementById('addButton');
+    let speedDials = JSON.parse(localStorage.getItem('speedDials')) || [];
 
-function displaySpeedDials() {
-    const grid = document.querySelector('.grid');
-    grid.innerHTML = ''; // Clear previous items
-    speedDials.forEach(dial => {
-        const speedDialElement = document.createElement('div');
-        speedDialElement.classList.add('speed-dial');
-        speedDialElement.innerHTML = `
-            <a href="${dial.url}" target="_blank">
-                <img src="https://www.google.com/s2/favicons?domain=${dial.url}" alt="${dial.name}">
-                <p>${dial.name}</p>
-            </a>
-        `;
-        grid.appendChild(speedDialElement);
-    });
-}
+    const initialSpeedDials = [
+        { name: 'GitHub', url: 'https://github.com' },
+        { name: 'ReVanced', url: 'https://github.com/ReVanced/revanced-patches/releases' },
+        { name: 'LiteAPKs', url: 'https://liteapks.com/' },
+        { name: 'PDF Candy', url: 'https://pdfcandy.com/' },
+        { name: 'Visa Check', url: 'https://epassportbd.info/visa-check-with-passport-number/' },
+        { name: 'Bollyflix', url: 'https://bollyflix.africa/' },
+    ];
 
-function openAddDialForm() {
-    document.getElementById('addDialForm').style.display = 'block';
-}
-
-function closeAddDialForm() {
-    document.getElementById('addDialForm').style.display = 'none';
-}
-
-function addSpeedDial() {
-    const name = document.getElementById('dialName').value;
-    const url = document.getElementById('dialUrl').value;
-
-    if (name && url) {
-        speedDials.push({ name, url });
-        displaySpeedDials();
-        closeAddDialForm();
+    if (speedDials.length === 0) {
+        speedDials = initialSpeedDials;
+        localStorage.setItem('speedDials', JSON.stringify(speedDials));
     }
-}
 
-window.onload = displaySpeedDials;
+    function getFavicon(url) {
+        return `https://logo.clearbit.com/${new URL(url).hostname}?size=80`;
+    }
+
+    function createSpeedDialCard(speedDial) {
+        const card = document.createElement('a');
+        card.className = 'card';
+        card.href = speedDial.url;
+        card.target = '_blank';
+
+        const img = document.createElement('img');
+        img.src = getFavicon(speedDial.url);
+        img.alt = speedDial.name;
+
+        const span = document.createElement('span');
+        span.textContent = speedDial.name;
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'remove-button';
+        removeButton.textContent = '×';
+        removeButton.onclick = (e) => {
+            e.preventDefault();
+            speedDials = speedDials.filter(sd => sd.url !== speedDial.url);
+            localStorage.setItem('speedDials', JSON.stringify(speedDials));
+            card.remove();
+        };
+
+        card.appendChild(img);
+        card.appendChild(span);
+        card.appendChild(removeButton);
+        return card;
+    }
+
+    function renderSpeedDials() {
+        speedDialGrid.innerHTML = '';
+        speedDials.forEach(speedDial => {
+            speedDialGrid.appendChild(createSpeedDialCard(speedDial));
+        });
+    }
+
+    addButton.addEventListener('click', () => {
+        const name = prompt('Enter the name:');
+        const url = prompt('Enter the URL:');
+        if (name && url) {
+            const newSpeedDial = { name, url };
+            speedDials.push(newSpeedDial);
+            localStorage.setItem('speedDials', JSON.stringify(speedDials));
+            renderSpeedDials();
+        }
+    });
+
+    renderSpeedDials();
+});
