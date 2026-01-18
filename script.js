@@ -17,19 +17,33 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('speedDials', JSON.stringify(speedDials));
     }
 
-    function getFavicon(url) {
-        return `https://logo.clearbit.com/${new URL(url).hostname}?size=80`;
+    /* 🔥 Primary favicon: Clearbit */
+    function getClearbitFavicon(url) {
+        const domain = new URL(url).hostname;
+        return `https://logo.clearbit.com/${domain}?size=128`;
     }
 
-    function createSpeedDialCard(speedDial) {
+    /* 🛡️ Fallback favicon: Google */
+    function getGoogleFavicon(url) {
+        const domain = new URL(url).hostname;
+        return `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
+    }
+
+    function createSpeedDialCard(speedDial, index) {
         const card = document.createElement('a');
         card.className = 'card';
         card.href = speedDial.url;
         card.target = '_blank';
 
         const img = document.createElement('img');
-        img.src = getFavicon(speedDial.url);
+        img.src = getClearbitFavicon(speedDial.url);
         img.alt = speedDial.name;
+
+        /* 🔁 Fallback chain */
+        img.onerror = () => {
+            img.onerror = null; // prevent infinite loop
+            img.src = getGoogleFavicon(speedDial.url);
+        };
 
         const span = document.createElement('span');
         span.textContent = speedDial.name;
@@ -39,10 +53,33 @@ document.addEventListener('DOMContentLoaded', () => {
         removeButton.textContent = '×';
         removeButton.onclick = (e) => {
             e.preventDefault();
-            speedDials = speedDials.filter(sd => sd.url !== speedDial.url);
+            speedDials.splice(index, 1);
             localStorage.setItem('speedDials', JSON.stringify(speedDials));
-            card.remove();
+            renderSpeedDials();
         };
+
+        /* ✏️ Long press / Right click edit */
+        let pressTimer;
+
+        const startPress = (e) => {
+            e.preventDefault();
+            pressTimer = setTimeout(() => {
+                editSpeedDial(index);
+            }, 600);
+        };
+
+        const cancelPress = () => clearTimeout(pressTimer);
+
+        card.addEventListener('touchstart', startPress);
+        card.addEventListener('touchend', cancelPress);
+        card.addEventListener('mousedown', startPress);
+        card.addEventListener('mouseup', cancelPress);
+        card.addEventListener('mouseleave', cancelPress);
+
+        card.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            editSpeedDial(index);
+        });
 
         card.appendChild(img);
         card.appendChild(span);
@@ -50,10 +87,28 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
+    function editSpeedDial(index) {
+        const current = speedDials[index];
+
+        const newName = prompt('Edit name:', current.name);
+        if (!newName) return;
+
+        const newUrl = prompt('Edit URL:', current.url);
+        if (!newUrl) return;
+
+        speedDials[index] = {
+            name: newName.trim(),
+            url: newUrl.trim()
+        };
+
+        localStorage.setItem('speedDials', JSON.stringify(speedDials));
+        renderSpeedDials();
+    }
+
     function renderSpeedDials() {
         speedDialGrid.innerHTML = '';
-        speedDials.forEach(speedDial => {
-            speedDialGrid.appendChild(createSpeedDialCard(speedDial));
+        speedDials.forEach((speedDial, index) => {
+            speedDialGrid.appendChild(createSpeedDialCard(speedDial, index));
         });
     }
 
@@ -61,8 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = prompt('Enter the name:');
         const url = prompt('Enter the URL:');
         if (name && url) {
-            const newSpeedDial = { name, url };
-            speedDials.push(newSpeedDial);
+            speedDials.push({ name, url });
             localStorage.setItem('speedDials', JSON.stringify(speedDials));
             renderSpeedDials();
         }
